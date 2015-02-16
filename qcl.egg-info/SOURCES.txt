@@ -1,0 +1,15 @@
+setup.py
+qcl/__init__.py
+qcl/__main__.py
+qcl/application.py
+qcl/dissociation.py
+qcl/figs.py
+qcl/qval.py
+qcl/qvalgrind.py
+qcl.egg-info/PKG-INFO
+qcl.egg-info/SOURCES.txt
+qcl.egg-info/dependency_links.txt
+qcl.egg-info/entry_points.txt
+qcl.egg-info/top_level.txt
+qcl/QCMatrix/__init__.py
+qcl/QCMatrix/utils.py
