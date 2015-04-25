@@ -1,1 +1,20 @@
+__pycache__
+
+# setup.py build stuff
 build
+dist
+qcl.egg-info
+
+*.pyc
+.ipynb*
+
+# Submit script junk
+*.e[0-9]*
+*.o[0-9]*
+*.in.[0-9]*
+
+# custom templates
+qcl/templates/user
+
+# Stupid Apple Views
+.DS_Store

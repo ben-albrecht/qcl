@@ -1,0 +1,9 @@
+$rem
+     jobtype               ts
+     exchange              omegaB97X-D
+     basis                 6-31G**
+     unrestricted          true
+     geom_opt_max_cycles   500
+     scf_max_cycles        300
+     scf_algorithm         diis_gdm
+$end

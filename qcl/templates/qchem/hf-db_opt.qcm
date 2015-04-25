@@ -1,0 +1,8 @@
+$rem
+        JOBTYPE             opt
+        exchange            hf
+        BASIS               6-31G**
+        BASIS2              r64G
+        DUAL_BASIS_ENERGY   true
+        UNRESTRICTED        true
+$end

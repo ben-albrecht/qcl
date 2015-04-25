@@ -1,0 +1,7 @@
+$rem
+    jobtype               sp
+    exchange              hf
+    basis                 6-31G**
+    maxscf                300
+    geom_opt_max_cycles   500
+$end

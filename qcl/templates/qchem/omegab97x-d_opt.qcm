@@ -1,0 +1,12 @@
+$rem
+    jobtype                     opt
+    exchange                    omegaB97X-D
+    basis                       6-31G**
+    unrestricted                true
+    geom_opt_tol_gradient       30
+    geom_opt_tol_displacement   120
+    geom_opt_tol_energy         10
+    geom_opt_max_cycles         300
+    scf_max_cycles              300
+    scf_algorithm               diis_gdm
+$end

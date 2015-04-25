@@ -1,0 +1,13 @@
+$rem
+    jobtype               fsm
+    exchange              omegab97x-d
+    basis                 6-31G**
+    unrestricted          true
+    fsm_ngrad             3
+    fsm_nnode             12
+    fsm_mode              2
+    fsm_opt_mode          2
+    geom_opt_max_cycles   500
+    scf_algorithm         diis_gdm
+    scf_max_cycles        500
+$end

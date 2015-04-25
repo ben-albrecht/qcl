@@ -2,9 +2,8 @@ setup.py
 qcl/__init__.py
 qcl/__main__.py
 qcl/application.py
-qcl/dissociation.py
 qcl/figs.py
-qcl/qval.py
+qcl/grep.py
 qcl/qvalgrind.py
 qcl.egg-info/PKG-INFO
 qcl.egg-info/SOURCES.txt

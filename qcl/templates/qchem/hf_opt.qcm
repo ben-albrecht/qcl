@@ -1,0 +1,8 @@
+$rem
+    jobtyp                opt
+    exchange              hf
+    basis                 STO-3G
+    unrestricted          true
+    maxscf                500
+    geom_opt_max_cycles   500
+$end
