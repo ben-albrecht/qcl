@@ -1,4 +1,4 @@
-""" Figs sub module to generate figures """
+""" Figs sub module to generate figures"""
 #!/usr/bin/env python3
 # encoding: utf-8
 
@@ -11,11 +11,6 @@ try:
     #import matplotlib.axes as ax
 except ImportError:
     raise ImportError('Unable to import all libraries')
-
-
-def main(opts):
-    """ Main function for figs """
-    figs(opts)
 
 
 def figs(opts):
@@ -132,3 +127,7 @@ def _opt(data):
     plt.show
 
     # TODO plot scfenergies vs. cycles
+
+def main(opts):
+    """ Main function for figs """
+    figs(opts)

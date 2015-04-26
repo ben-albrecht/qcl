@@ -1,0 +1,12 @@
+$molecule
+0 1
+O         -5.35740        2.09256        0.00000
+H         -4.38740        2.09256        0.00000
+H         -5.68073        1.66625       -0.80909
+$end
+
+$rem
+jobtype opt
+basis 6-311++G(3df,3pd)
+exchange omegab97x-d
+$end
