@@ -132,3 +132,5 @@ def mopacoutputfile(mopacoutputfile, nogeometry=True):
                 # Placeholder for later
                 setattr(ccdata, 'relenergies', None)
                 return ccdata
+        print(mopacoutputfile, " - no TOTAL ENERGY found")
+        raise
