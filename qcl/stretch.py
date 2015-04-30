@@ -5,7 +5,7 @@ import os
 import sys
 import copy
 
-from polymer import parse, write, templates, zmatrix
+from qcl import parse, write, templates
 
 try:
     from cclib.writer import ccwrite

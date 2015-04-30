@@ -10,7 +10,7 @@ try:
 except ImportError:
     raise ImportError("Cannot import six")
 
-from polymer import find, parse, write
+from qcl import find, parse, write
 
 def obconformer(xyzfile, conformerfile=None, nconf=1000):
     """ Python wrapper for openbabel call to conformer

@@ -1,7 +1,10 @@
 """Main qcl Application called when qcl script is invoked """
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, ArgumentTypeError
+from argparse import ArgumentParser, \
+    ArgumentDefaultsHelpFormatter, \
+    ArgumentTypeError
 from qcl import conformers, obconformers, minima, \
-                stretch, templates, utils, write, zmatrix, figs
+    stretch, templates, zmatrix, figs
+
 
 def get_arguments(args=None):
     """

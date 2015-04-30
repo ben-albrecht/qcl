@@ -5,7 +5,7 @@ import itertools
 from copy import deepcopy
 
 # Local imports
-from polymer import find, parse, write, zmatrix, obconformers
+from qcl import find, parse, write, zmatrix, obconformers
 
 def generateconformers(ccdata_xyz, interval=60):
     """Generate conformers using in-house conformer code"""

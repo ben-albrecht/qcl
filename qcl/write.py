@@ -9,7 +9,7 @@ try:
 except ImportError:
     raise ImportError("cclib not found!")
 
-from polymer import templates
+from qcl import templates
 
 
 def inputfiles(ccdatas, templatefiles, path):
