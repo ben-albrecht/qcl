@@ -1,3 +1,0 @@
-[console_scripts]
-qcl = qcl.__main__:main
-

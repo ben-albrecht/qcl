@@ -1,3 +1,4 @@
+""" Class definition of ccData_xyz, a child class of cclib's ccData"""
 from __future__ import print_function
 from __future__ import division
 
@@ -8,7 +9,6 @@ import numpy as np
 # Suppress scientific notation printouts and change default precision
 np.set_printoptions(precision=4)
 np.set_printoptions(suppress=True)
-
 
 try:
     from cclib.parser.data import ccData
@@ -36,7 +36,7 @@ class ccData_xyz(ccData):
         # Internal Coordinate Connectivity
         self.connectivity = None
         self.angleconnectivity = None
-        self.dihedralconnectivity =  None
+        self.dihedralconnectivity = None
 
         # Internal Coordinates
         self.distances = None
@@ -54,9 +54,7 @@ class ccData_xyz(ccData):
         #self._attrtypes['connectivity'] = list
         #self._attrlist.append('connectivity')
 
-
         super(ccData_xyz, self).__init__(attributes=attributes)
-
 
     def _build_distance_matrix(self):
         """Build distance matrix between all atoms
@@ -172,7 +170,6 @@ class ccData_xyz(ccData):
 
                 self.dihedralconnectivity[atom] = atms[3]
 
-
     def calc_angle(self, atom1, atom2, atom3):
         """Calculate angle between 3 atoms"""
         vec1 = self.atomcoords[atom2] - self.atomcoords[atom1]
@@ -269,7 +266,6 @@ class ccData_xyz(ccData):
             elif i == 1:
                 print("%s" % "r"+idx, "%6.4f" % self.distances[i])
 
-
     def print_zmat(self):
         """Print Standard Z-Matrix Format"""
         #TODO
@@ -282,14 +278,12 @@ class ccData_xyz(ccData):
         H 2 1.0 1 120.0 3 180.0
         """
 
-
     def build_xyz(self):
         """ Build xyz representation from z-matrix"""
         self.newcoords = []
         for i in range(len(self.atomcoords)):
             self.newcoords.append(self.calc_position(i))
         self.atomcoords = self.newcoords
-
 
     def calc_position(self, i):
         """Calculate position of another atom based on internal coordinates"""
@@ -302,7 +296,7 @@ class ccData_xyz(ccData):
             # Prevent doubles
             if k == l and i > 0:
                 for idx in range(1, len(self.connectivity[:i])):
-                    if self.connectivity[idx] in [i,j,k] and not idx in [i,j,k]:
+                    if self.connectivity[idx] in [i, j, k] and not idx in [i, j, k]:
                         l = idx
                         break
 
@@ -324,36 +318,35 @@ class ccData_xyz(ccData):
             v1 = avec - bvec
             v2 = avec - cvec
 
-            n = np.cross(v1,v2)
-            nn = np.cross(v1,n)
+            n = np.cross(v1, v2)
+            nn = np.cross(v1, n)
 
             n /= norm(n)
             nn /= norm(nn)
 
-            n  *= -sin(tor);
-            nn *= cos(tor);
+            n *= -sin(tor)
+            nn *= cos(tor)
 
-            v3 = n + nn;
+            v3 = n + nn
             v3 /= norm(v3)
-            v3 *= dst * sin(ang);
+            v3 *= dst * sin(ang)
 
             v1 /= norm(v1)
-            v1 *= dst * cos(ang);
+            v1 *= dst * cos(ang)
 
-            position = avec + v3 - v1;
+            position = avec + v3 - v1
 
-        elif i== 1:
+        elif i == 1:
             # Second atom dst away from origin along Z-axis
             j = self.connectivity[i]
             dst = self.distances[i]
             position = np.array([self.newcoords[j][0] + dst, self.newcoords[j][1], self.newcoords[j][2]])
 
-        elif i== 0:
+        elif i == 0:
             # First atom at the origin
             position = np.array([0, 0, 0])
 
         return position
-
 
     def print_xyz(self):
         """Print Standard XYZ Format"""
