@@ -12,6 +12,7 @@ except ImportError:
     raise
 
 from qcl import utils
+from qcl import periodictable as pt
 from qcl.ccdata_xyz import ccData_xyz
 
 
@@ -39,18 +40,16 @@ def xyzfile(xyzfile, ccxyz=False):
     with open(xyzfile, 'r') as handle:
         lines = handle.readlines()
 
-        if len(lines[1].split()) == 2:
-            charge, multiplicity = lines[1].split()
-            if utils.is_type(int, charge):
-                attributes['charge'] = int(charge)
-            if utils.is_type(int, multiplicity) and int(multiplicity) > 0:
-                attributes['mult'] = int(multiplicity)
+        charge, mult = _chargemult(lines[1])
 
         geometry = [x.split() for x in lines[2:]]
         coordinates = [x[1:] for x in geometry]
         atomnos = [ptable.number[x[0]] for x in geometry]
         attributes['atomcoords'] = np.array(coordinates)
         attributes['atomnos'] = np.array(atomnos)
+        attributes['natom'] = len(atomnos)
+        elements = [pt.Element[x] for x in atomnos]
+        attributes['atommasses'] = [pt.Mass[x] for x in elements]
 
         if ccxyz:
             # Custom ccData_xyz attributes

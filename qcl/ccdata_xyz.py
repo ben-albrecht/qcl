@@ -101,8 +101,7 @@ class ccData_xyz(ccData):
         Angles between connected atoms (atom >= 2)
         Dihedral angles between connected atoms (atom >= 3)
         """
-        if not self.distancematrix:
-            self._build_distance_matrix()
+        self._build_distance_matrix()
 
         # self.connectivity[i] tells you the index of 2nd atom connected to atom i
         self.connectivity = np.zeros(len(self.atomnos)).astype(int)
@@ -280,9 +279,9 @@ class ccData_xyz(ccData):
 
     def build_xyz(self):
         """ Build xyz representation from z-matrix"""
-        self.newcoords = []
+        self.newcoords = np.zeros((len(self.atomcoords), 3))
         for i in range(len(self.atomcoords)):
-            self.newcoords.append(self.calc_position(i))
+            self.newcoords[i] = self.calc_position(i)
         self.atomcoords = self.newcoords
 
     def calc_position(self, i):
