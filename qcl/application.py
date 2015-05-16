@@ -1,7 +1,7 @@
 """Main qcl Application called when qcl script is invoked """
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, ArgumentTypeError
 from qcl import conformers, obconformers, minima, \
-                stretch, templates, utils, write, zmatrix, figs
+                stretch, templates, utils, write, zmatrix, figs, rmsd
 
 def get_arguments(args=None):
     """
@@ -198,19 +198,33 @@ def get_arguments(args=None):
     # Zmatrix function call
     parser_zmatrix.set_defaults(func=zmatrix.main)
 
+    # rmsd subparser
+    parser_rmsd = subparsers.add_parser(
+        'rmsd',
+        help="Compute rmsd between 2 xyzfiles")
+
+    # rmsd arguments
+    parser_rmsd.add_argument('xyzfile1', help='xyzfile1')
+    parser_rmsd.add_argument('xyzfile2', help='xyzfile2')
+
+    # rmsd function call
+    parser_rmsd.set_defaults(func=rmsd.main)
+
     opts = parser.parse_args(args)
 
     return parser.parse_args(args)
 
 
 def restricted_float(x):
+    """Custom type for float between 0.0 and 1.0"""
     x = float(x)
-    if x < 0.0 or x > 1.0:
+    if not 0.0 <= x <= 1.0:
         raise ArgumentTypeError("%r not in range [0.0, 1.0]"%(x,))
     return x
 
 
 def angle(x):
+    """Custom type for angles"""
     x = float(x)
     if not 0 <= x < 360.0:
         raise ArgumentTypeError("Angle %r not in range [0.0, 360.0]"%(x,))
