@@ -6,23 +6,22 @@ for large systems
 Also, it assumes a bonding interatomic distance will always
 be shorter than a non-bonding interatomic distance
 """
-from __future__ import print_function
-from __future__ import division
 
-from polymer import parse
+from qcl import parse
 
 
-def zmatrix(xyzfile):
-    """Convert xyzfile to zmatrix file"""
+def internalize(xyzfile):
+    """Convert xyzfile to internal coordinate then back to cartesian coords"""
+
     ccdata_xyz = parse.xyzfile(xyzfile, ccxyz=True)
 
     ccdata_xyz.build_zmatrix()
 
-    #ccdata_xyz.print_gzmat()
     ccdata_xyz.build_xyz()
-    ccdata_xyz.print_xyz()
+
+    return ccdata_xyz
 
 
 def main(opts):
     """Main function for xyz to zmatrix conversion"""
-    zmatrix(opts.xyzfile)
+    internalize(opts.xyzfile)

@@ -2,15 +2,16 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 
+FIGS = True
+
 try:
     import cclib
     import numpy as np
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
-    #import matplotlib.axes as ax
 except ImportError:
-    raise ImportError('Unable to import all libraries')
+    FIGS = False
 
 
 def figs(opts):
@@ -128,6 +129,13 @@ def _opt(data):
 
     # TODO plot scfenergies vs. cycles
 
+
 def main(opts):
     """ Main function for figs """
-    figs(opts)
+    if FIGS:
+        figs(opts)
+    else:
+        raise ImportError("""Unable to import all libraries for figs
+                       numpy
+                       matplotlib
+                       cclib""")

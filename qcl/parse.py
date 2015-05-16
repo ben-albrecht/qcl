@@ -11,8 +11,9 @@ except ImportError:
     print("cclib not found!")
     raise
 
-from polymer import utils
-from polymer.ccdata_xyz import ccData_xyz
+from qcl import utils
+from qcl import periodictable as pt
+from qcl.ccdata_xyz import ccData_xyz
 
 
 def parse(source):
@@ -39,25 +40,23 @@ def xyzfile(xyzfile, ccxyz=False):
     with open(xyzfile, 'r') as handle:
         lines = handle.readlines()
 
-        if len(lines[1].split()) == 2:
-            charge, multiplicity = lines[1].split()
-            if utils.is_type(int, charge):
-                attributes['charge'] = int(charge)
-            if utils.is_type(int, multiplicity) and int(multiplicity) > 0:
-                attributes['mult'] = int(multiplicity)
+        charge, mult = _chargemult(lines[1])
 
         geometry = [x.split() for x in lines[2:]]
         coordinates = [x[1:] for x in geometry]
         atomnos = [ptable.number[x[0]] for x in geometry]
         attributes['atomcoords'] = np.array(coordinates)
         attributes['atomnos'] = np.array(atomnos)
+        attributes['natom'] = len(atomnos)
+        elements = [pt.Element[x] for x in atomnos]
+        attributes['atommasses'] = [pt.Mass[x] for x in elements]
 
         if ccxyz:
             # Custom ccData_xyz attributes
             elements = [x[0] for x in geometry]
             attributes['elements'] = elements
             attributes['comment'] = lines[1]
-            attributes['filename'] = xyzfile.rstrip()
+            attributes['filename'] = os.path.split(xyzfile.rstrip())[1]
             ccObject = ccData_xyz(attributes=attributes)
         else:
             ccObject = ccData(attributes=attributes)
@@ -66,7 +65,7 @@ def xyzfile(xyzfile, ccxyz=False):
 
 
 def multixyzfile(multixyzfile):
-    """ Parse multixyzfile to ccData object """
+    """Parse multixyzfile to list of ccData objects"""
     assert type(multixyzfile) == str
 
     attributeslist = []
@@ -78,38 +77,38 @@ def multixyzfile(multixyzfile):
         raise EOFError(multixyzfile+" is empty")
     else:
         with open(multixyzfile, 'r') as handle:
+            attributeslist = []
             lines = handle.readlines()
-
-            # An xyz file has number of lines = number of atoms + 2
-            lengthgeom = int(lines[0])+2
-            numgeoms = len(lines) // lengthgeom
-            print(numgeoms)
-
-            for j in range(0, numgeoms):
-                coordinates = []
-                atomnos = []
+            filelength = len(lines)
+            idx = 0
+            while True:
                 attributes = {}
+                atomcoords = []
+                atomnos = []
 
-                # TODO - smarter error msg if charge and multiplicity not in comment line
-                charge, multiplicity = lines[1 + lengthgeom*j].split()
-                # Check if charge and/or multiplicity is given in xyz comments
-                if utils.is_type(int, charge):
-                    attributes['charge'] = int(charge)
-                if utils.is_type(int, multiplicity) and int(multiplicity) > 0:
-                    attributes['mult'] = int(multiplicity)
+                # Get number of atoms and charge/mult from comment line
+                numatoms = int(lines[idx])
+                charge, mult = _chargemult(lines[idx+1])
 
-                for i in range(2 + lengthgeom*j, lengthgeom + lengthgeom*j):
-                    atomgeometry = [x for x in lines[i].split()]
+                for line in lines[idx+2:numatoms+idx+2]:
+                    atomgeometry = [x for x in line.split()]
                     atomnos.append(ptable.number[atomgeometry[0]])
-                    coordinates.append([float(x) for x in atomgeometry[1:]])
-
-                attributes['atomcoords'] = np.array(coordinates)
+                    atomcoords.append([float(x) for x in atomgeometry[1:]])
+                idx = numatoms+idx+2
+                attributes['charge'] = charge
+                attributes['mult'] = mult
+                attributes['atomcoords'] = np.array(atomcoords)
                 attributes['atomnos'] = np.array(atomnos)
                 attributeslist.append(attributes)
 
+                # Break at EOF
+                if idx >= filelength:
+                    break
+
         print('Number of conformers parsed:', len(attributeslist))
 
-        return [ccData(attributes=attrs) for attrs in attributeslist]
+        ccdatas = [ccData(attributes=attrs) for attrs in attributeslist]
+        return ccdatas
 
 
 def mopacoutputfile(mopacoutputfile, nogeometry=True):
@@ -121,14 +120,32 @@ def mopacoutputfile(mopacoutputfile, nogeometry=True):
     with open(mopacoutputfile, 'r') as handle:
         lines = handle.readlines()
         attributes = {}
+        ccdata = None
         for line in lines:
             if "TOTAL ENERGY" in line:
                 scf = float(line.split()[3])
-                scfEh = convertor(scf, 'eV', 'kcal')
-                attributes['scfenergies'] = [scfEh]
+                scfkcal = convertor(scf, 'eV', 'kcal')
+                attributes['scfenergies'] = [scfkcal]
                 ccdata = ccData(attributes=attributes)
-                setattr(ccdata, 'filename', mopacoutputfile)
-                setattr(ccdata, 'index', mopacoutputfile.split('.')[0])
-                # Placeholder for later
-                setattr(ccdata, 'relenergies', None)
-                return ccdata
+                break
+
+        if not ccdata:
+            print(mopacoutputfile, " - no TOTAL ENERGY found")
+            raise
+        else:
+            return ccdata
+
+
+def _chargemult(line):
+    """Get charge/mult from line. Default to 0,1 if no charge/mult found"""
+    line = line.split()
+    charge = 0
+    mult = 1
+    if len(line) == 2:
+        if utils.is_type(int, line[0]):
+            charge = int(line[0])
+        if utils.is_type(int, line[1]) and int(line[1]) > 0:
+            mult = int(line[1])
+    return charge, mult
+
+
