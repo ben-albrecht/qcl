@@ -9,6 +9,7 @@ Here are some features currently available:
     templates           Template file management
     minima              Find minimum energy among many outputfiles
     zmatrix             Generate Z-Matrix from xyzfile
+    rmsd                Align geometry and compute rmsd between 2 xyzfiles
 
 
 

@@ -13,7 +13,7 @@ def read(fname):
 setup(
     name="qcl",
     packages=find_packages(),
-    version="0.0.2",
+    version="0.0.3",
     author="Ben Albrecht",
     author_email="benalbrecht@pitt.edu",
     description=("Quantum Chemistry Laboratory"),
