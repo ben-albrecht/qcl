@@ -1,5 +1,4 @@
-#!/usr/bin/env  python
-
+"""Currently unused"""
 import numpy as np
 import StringIO
 import sys
@@ -81,9 +80,9 @@ class QCMatrix(object):
             if "basis functions" in line:
                 bas_shls = [int(s) for s in line.split() if s.isdigit()]
                 #print bas_shls
-                print "NBasis = ", bas_shls[1]
+                print("NBasis = ", bas_shls[1])
                 if int(bas_shls[1]) < 7:
-                    print "Basis is too small for this script to work"
+                    print("Basis is too small for this script to work")
                     exit(1)
                 return int(bas_shls[1])
 
@@ -105,11 +104,11 @@ class QCMatrix(object):
 
         if self.title is None and self.occurrence is None:
             # Get next matrix after self.linenum
-            print "Finding next matrix after line ", self.linenum
+            print("Finding next matrix after line ", self.linenum)
             num = self.linenum
         elif self.linenum is None:
             # Get self.occurrence'th matrix named self.title
-            print "Finding occurrence ", self.occurrence, "of matrix named ", self.title
+            print("Finding occurrence ", self.occurrence, "of matrix named ", self.title)
             num = 1
             occ = 0
             while num < len(self.lines):
@@ -119,13 +118,13 @@ class QCMatrix(object):
                     if occ == self.occurrence:
                         break
                     elif num == (len(self.lines) - 1):
-                        print "Error: only ", occ, " occurrences of ", self.title, " matrix found in file"
+                        print("Error: only ", occ, " occurrences of ", self.title, " matrix found in file")
                         exit(1)
                 else:
                     num += 1
         elif self.occurrence is None:
             # Get matrix named self.title after self.linenum
-            print "Finding matrix named ", self.title, " after line ", self.linenum
+            print("Finding matrix named ", self.title, " after line ", self.linenum)
             # Start at line from input
             num = self.linenum
             # Skip to line right before matrix with name
@@ -137,7 +136,7 @@ class QCMatrix(object):
                     num += 1
         else:
             # Crash
-            print "Internal error with _get_next_matrix()"
+            print("Internal error with _get_next_matrix()")
             exit(1)
 
         # Main Loop of _get_next_matrix:
@@ -150,7 +149,7 @@ class QCMatrix(object):
                 column_ids = self._extract_column_ids(line)
                 # The matrix has been found
                 found_matrix = True
-                print "Loading Matrix ", self.lines[num - 2], "from line ", num - 1
+                print("Loading Matrix ", self.lines[num - 2], "from line ", num - 1)
                 self.title = self.lines[num - 2]
                 num += 1
                 # Now lets extract the actual values from the matrix
@@ -200,7 +199,7 @@ class QCMatrix(object):
         This magic symbol str overrides the string method so now I can straight up print my object
         Boom bitch
 
-        >>> print qmat
+        >>> print(qmat)
         >>> s = str(qmat)
         """
         s = StringIO.StringIO()
@@ -220,7 +219,7 @@ class QCMatrix(object):
             plt.savefig(oname)
 
     def show(self, *args, **kwargs):
-        print "*** Warning *** show() may not work remotely"
+        print("*** Warning *** show() may not work remotely")
         self.plot(*args, **kwargs)
         self.plt.show()
 
