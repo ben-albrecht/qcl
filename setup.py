@@ -12,23 +12,17 @@ def read(fname):
 
 setup(
     name="qcl",
-    version="0.0.1",
+    packages=find_packages(),
+    version="0.0.2",
     author="Ben Albrecht",
     author_email="benalbrecht@pitt.edu",
     description=("Quantum Chemistry Laboratory"),
+    # This feature is not compatible with pip install :(
+    #long_description=read('README.md'),
     keywords="Quantum Chemistry",
-    # To include templates directory
+    url='https://github.com/ben-albrecht/qcl',
+    download_url='https://github.com/ben-albrecht/qcl/tarball/0.0.2',
     include_package_data=True,
-    packages=find_packages(),
-    #install_requires = reqs,
-    long_description=read('README.md'),
-    entry_points=
-    {'console_scripts': ['qcl = qcl.__main__:main']}
-    #license = "BSD",
-    #url = "http://packages.python.org/an_example_pypi_project",
-    #classifiers=[
-    #    "Development Status :: 3 - Alpha",
-    #    "Topic :: Utilities",
-    #    "License :: OSI Approved :: BSD License",
-    #],
+    license="MIT",
+    entry_points={'console_scripts': ['qcl = qcl.__main__:main']}
 )

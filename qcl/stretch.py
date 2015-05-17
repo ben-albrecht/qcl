@@ -8,7 +8,6 @@ import copy
 from qcl import parse, write, templates
 
 try:
-    from cclib.writer import ccwrite
     from cclib.parser import ccopen
 except ImportError:
     print("cclib not found!")
@@ -41,12 +40,11 @@ def stretch(outputfile, shift=2.0, templatefiles=None):
         if templatefiles:
             savexyz = False
 
+    outputccdata = ccopen(outputfile).parse()
+
     fname, _ = os.path.splitext(outputfile)
     xyzfile = fname+'.xyz'
-
-
-    outputccdata = ccopen(outputfile).parse()
-    ccwrite(outputccdata, filetype='xyz', outputdest=xyzfile)
+    write.xyzfile(outputccdata, xyzfile)
 
     ccdatas = []
     product = parse.xyzfile(xyzfile, ccxyz=True)
