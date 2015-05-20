@@ -1,14 +1,12 @@
 """ Figs sub module to generate figures"""
-#!/usr/bin/env python3
-# encoding: utf-8
 
+# Global variable that gives us imports status
 FIGS = True
 
 try:
     import cclib
+    from cclib import parser
     import numpy as np
-    import matplotlib
-    matplotlib.use('Agg')
     import matplotlib.pyplot as plt
 except ImportError:
     FIGS = False
@@ -22,11 +20,11 @@ def figs(opts):
 
     if type(opts.fname) == str:
         # Assuming ccinput is a filename
-        data = cclib.parser.ccopen(opts.fname).parse()
+        data = parser.ccopen(opts.fname).parse()
     else:
         data = opts.fname
-        assert type(data) == cclib.parser.data.ccData_optdone_bool \
-            or type(data) == cclib.parser.data.ccData
+        assert type(data) == parser.data.ccData_optdone_bool \
+            or type(data) == parser.data.ccData
 
     # TODO: determine what kind of job (opt, sp, freq)
         # auto = automatically determine
@@ -74,6 +72,8 @@ def _sp(data):
     plt.xlabel("SCF Cycle")
     plt.legend()
 
+    print(idx, criteria, data.scftargets)
+
     plt.show()
 
    # idx = np.arange(len(data.scfenergies))
@@ -89,7 +89,7 @@ def _opt(data):
     :returns: TODO
     """
     print("\n\n")
-    print("Optimization Converged: ", data.optdone)
+    #print("Optimization Converged: ", data.optdone)
     print("Optimization Targets:")
     print("Gradient: ", data.geotargets[0])
     print("Displacement: ", data.geotargets[1])

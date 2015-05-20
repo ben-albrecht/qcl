@@ -21,7 +21,7 @@ setup(
     #long_description=read('README.md'),
     keywords="Quantum Chemistry",
     url='https://github.com/ben-albrecht/qcl',
-    download_url='https://github.com/ben-albrecht/qcl/tarball/0.0.2',
+    download_url='https://github.com/ben-albrecht/qcl/tarball/0.0.3',
     include_package_data=True,
     license="MIT",
     entry_points={'console_scripts': ['qcl = qcl.__main__:main']}
