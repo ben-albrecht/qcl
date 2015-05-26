@@ -44,9 +44,14 @@ def qcheminputfile(ccdata, templatefile, inpfile):
     :templatefile:  templatefile - tells us which template file to use
     :inpfile:     OUTPUT - expects a path/to/inputfile to write inpfile
     """
-    assert type(inpfile) is str
 
     with open(inpfile, 'w') as handle:
+        handle.write(_qcheminputfile_string(ccdata, templatefile, inpfile))
+
+
+def _qcheminputfile_string(ccdata, templatefile, inpfile):
+
+        string = ''
 
         if ccdata.charge:
             charge = ccdata.charge
@@ -55,12 +60,12 @@ def qcheminputfile(ccdata, templatefile, inpfile):
         if ccdata.mult:
             mult = ccdata.mult
         else:
-            print("Multiplicity not found, set to 1 by default")
+            print('Multiplicity not found, set to 1 by default')
             mult = 1
 
         # $molecule
-        handle.write("$molecule\n")
-        handle.write("%s %s\n" % (charge, mult))
+        string += '$molecule\n'
+        string += '%{0} %{1}\n'.format(charge, mult)
 
         # Geometry (Maybe a cleaner way to do this..)
         atomnos = [PeriodicTable().element[x] for x in ccdata.atomnos]
@@ -71,9 +76,9 @@ def qcheminputfile(ccdata, templatefile, inpfile):
             atomcoords[i].insert(0, atomnos[i])
 
         for atom in atomcoords:
-            handle.write("  %s %10.8f %10.8f %10.8f\n" % tuple(atom))
+            string +='  {0} {1:10.8f} {2:10.8f} {3:10.8f}\n'.format(*atom)
 
-        handle.write("$end\n\n")
+        string +='$end\n\n'
         # $end
 
         # $rem
@@ -81,8 +86,10 @@ def qcheminputfile(ccdata, templatefile, inpfile):
             templatelines = [x for x in templatehandle.readlines()]
 
         for line in templatelines:
-            handle.write(line)
+            string += line
         # $end
+
+        return string
 
 
 def qchemfsminputfile(ccdatas, templatefile, inpfile):
