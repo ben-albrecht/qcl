@@ -212,8 +212,6 @@ def get_arguments(args=None):
     # rmsd function call
     parser_rmsd.set_defaults(func=rmsd.main)
 
-    opts = parser.parse_args(args)
-
     return parser.parse_args(args)
 
 

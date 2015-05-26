@@ -131,7 +131,7 @@ def mopacoutputfile(mopacoutputfile, nogeometry=True):
 
         if not ccdata:
             print(mopacoutputfile, " - no TOTAL ENERGY found")
-            raise
+            return None
         else:
             return ccdata
 
