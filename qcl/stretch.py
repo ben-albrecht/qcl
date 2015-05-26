@@ -6,6 +6,7 @@ import sys
 import copy
 
 from qcl import parse, write, templates
+from qcl.ccdata_xyz import ccData_xyz
 
 try:
     from cclib.parser import ccopen
@@ -40,17 +41,37 @@ def stretch(outputfile, shift=2.0, templatefiles=None):
         if templatefiles:
             savexyz = False
 
-    outputccdata = ccopen(outputfile).parse()
+    ccdata = ccopen(outputfile).parse()
 
     fname, _ = os.path.splitext(outputfile)
-    xyzfile = fname+'.xyz'
-    write.xyzfile(outputccdata, xyzfile)
+    #xyzfile = fname+'.xyz'
+    #write.xyzfile(outputccdata, xyzfile)
 
+    product = ccData_xyz(ccdata.getattributes(), ccdataconvert=True)
     ccdatas = []
-    product = parse.xyzfile(xyzfile, ccxyz=True)
+    #product = parse.xyzfile(xyzfile, ccxyz=True)
     product.build_zmatrix()
     reactant = copy.deepcopy(product)
     reactant.distances[1] += shift
+
+    # TODO:If reactants provided, use their geometry internal coords
+    # and modify internalcoords of reactant
+
+    # FIXME hardcoded paths instead of cli args
+    #rpaths = ['../../initiators/MeO/0.omegab97x-d_opt.out', '../../ketenes/TMS/0.omegab97x-d_opt.out']
+
+    #reactants = []
+    #for rpath in rpaths:
+    #    reactants.append(parse.xyzfile(rpath, ccdata_xyz=True))
+
+    #for r in reactants:
+    #    r.build_zmatrix()
+
+    # TODO Determine which reactant is which
+    # Some ways to do this:
+        # numatom, atomnos
+    # TODO How to deal with symmetrical reactants?
+        # Just guess (1/2 chance) - possibly cli to swap if wrong
 
     product.build_xyz()
     reactant.build_xyz()
@@ -78,8 +99,9 @@ def stretch(outputfile, shift=2.0, templatefiles=None):
             write.inputfile(ccdatas,
                             templatefiles[i],
                             fname+idx+'.qcm')
-
-    os.remove(xyzfile)
+    else:
+        #reactant.print_xyz()
+        reactant.print_gzmat()
 
 
 def main(opts):

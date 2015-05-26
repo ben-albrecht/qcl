@@ -58,4 +58,3 @@ def walk(top, topdown=True, onerror=None, followlinks=False, ignore=[]):
             yield from walk(new_path, topdown, onerror, followlinks)
     if not topdown:
         yield top, dirs, nondirs
-

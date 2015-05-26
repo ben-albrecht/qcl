@@ -1,4 +1,4 @@
-""" Class definition of ccData_xyz, a child class of cclib's ccData"""
+""" Class definition of ccData_xyz, an extension to cclib's ccData"""
 from __future__ import print_function
 from __future__ import division
 
@@ -6,6 +6,7 @@ import math
 from numpy import sin, cos, pi
 from numpy.linalg import norm
 import numpy as np
+
 # Suppress scientific notation printouts and change default precision
 np.set_printoptions(precision=4)
 np.set_printoptions(suppress=True)
@@ -27,7 +28,7 @@ class ccData_xyz(ccData):
     Includes some hot new attributes and class methods
     """
 
-    def __init__(self, attributes={}):
+    def __init__(self, attributes={}, ccdataconvert=False):
         """Adding some new attributes for xyzfiles"""
 
         self.newcoords = None
@@ -49,6 +50,7 @@ class ccData_xyz(ccData):
         self._attrlist.append('filename')
         self._attrtypes['elements'] = list
         self._attrlist.append('elements')
+
         #self._attrtypes['distancematrix'] = np.ndarray
         #self._attrlist.append('distancematrix')
         #self._attrtypes['connectivity'] = list
@@ -56,41 +58,25 @@ class ccData_xyz(ccData):
 
         super(ccData_xyz, self).__init__(attributes=attributes)
 
+        # Initialize new data types if converting from ccdata
+        if ccdataconvert:
+            pt = PeriodicTable()
+            self.comment = '\n'
+            self.filename = ''
+            self.elements = []
+            for atomno in self.atomnos:
+                self.elements.append(pt.element[atomno])
+            self.atomcoords = self.atomcoords[-1]
+
     def _build_distance_matrix(self):
         """Build distance matrix between all atoms
-           TODO: calculate distances only as needed"""
+           TODO: calculate distances only as needed for efficiency"""
         coords = self.atomcoords
         self.distancematrix = np.zeros((len(coords), len(coords)))
         for i in range(len(coords)):
             for j in [x for x in range(len(coords)) if x > i]:
                 self.distancematrix[i][j] = norm(coords[i] - coords[j])
                 self.distancematrix[j][i] = self.distancematrix[i][j]
-
-    def print_distance_matrix(self):
-        """Print distance matrix in formatted form"""
-
-        # Title
-        print("\nDistance Matrix")
-
-        # Row Indices
-        for i in range(len(self.distancematrix)):
-            print("%3d" % i, end="  ")
-
-        print("\n", end="")
-        idx = 0
-        for vector in self.distancematrix:
-
-            # Column indices
-            print(idx, end=" ")
-
-            # Actual Values
-            for element in vector:
-                if not element == 0:
-                    print("%1.2f" % element, end=" ")
-                else:
-                    print("%1s" % " ", end="    ")
-            print("\n", end="")
-            idx += 1
 
     def build_zmatrix(self):
         """
@@ -146,7 +132,7 @@ class ccData_xyz(ccData):
 
                 self.angleconnectivity[atom] = atms[2]
 
-                self.angles[atom] = self.calc_angle(atms[0], atms[1], atms[2])
+                self.angles[atom] = self._calc_angle(atms[0], atms[1], atms[2])
 
             # Compute Dihedral Angles
             if atom >= 3:
@@ -162,14 +148,14 @@ class ccData_xyz(ccData):
                             break
 
                 self.dihedrals[atom] =\
-                    self.calc_dihedral(atms[0], atms[1], atms[2], atms[3])
+                    self._calc_dihedral(atms[0], atms[1], atms[2], atms[3])
                 if math.isnan(self.dihedrals[atom]):
                     # TODO: Find explicit way to denote undefined dihedrals
                     self.dihedrals[atom] = 0.0
 
                 self.dihedralconnectivity[atom] = atms[3]
 
-    def calc_angle(self, atom1, atom2, atom3):
+    def _calc_angle(self, atom1, atom2, atom3):
         """Calculate angle between 3 atoms"""
         vec1 = self.atomcoords[atom2] - self.atomcoords[atom1]
         uvec1 = vec1 / norm(vec1)
@@ -177,7 +163,7 @@ class ccData_xyz(ccData):
         uvec2 = vec2 / norm(vec2)
         return np.arccos(np.dot(uvec1, uvec2))*(180.0/pi)
 
-    def calc_dihedral(self, atom1, atom2, atom3, atom4):
+    def _calc_dihedral(self, atom1, atom2, atom3, atom4):
         """
            Calculate dihedral angle between 4 atoms
            For more information, see:
@@ -209,82 +195,14 @@ class ccData_xyz(ccData):
             dihedral = 360.0 + dihedral
         return dihedral
 
-    def print_gzmat(self):
-        """Print Guassian Z-Matrix Format
-        e.g.
-
-        0  3
-        C
-        O  1  r2
-        C  1  r3  2  a3
-        Si 3  r4  1  a4  2  d4
-        ...
-        Variables:
-        r2= 1.1963
-        r3= 1.3054
-        a3= 179.97
-        r4= 1.8426
-        a4= 120.10
-        d4=  96.84
-        ...
-        """
-
-        print('#', self.filename, "\n")
-        print(self.comment)
-        t = PeriodicTable()
-
-        print(self.comment, end='')
-        for i in range(len(self.atomnos)):
-            idx = str(i+1)+" "
-            if i >= 3:
-                print(t.element[self.atomnos[i]], "",
-                      self.connectivity[i]+1, " r"+idx,
-                      self.angleconnectivity[i]+1, " a"+idx,
-                      self.dihedralconnectivity[i]+1, " d"+idx.rstrip())
-            elif i == 2:
-                print(t.element[self.atomnos[i]], "",
-                      self.connectivity[i]+1, " r"+idx,
-                      self.angleconnectivity[i]+1, " a"+idx.rstrip())
-            elif i == 1:
-                print(t.element[self.atomnos[i]], "",
-                      self.connectivity[i]+1, " r"+idx.rstrip())
-            elif i == 0:
-                print(t.element[self.atomnos[i]])
-
-        print("Variables:")
-
-        for i in range(1, len(self.atomnos)):
-            idx = str(i+1)+"="
-            if i >= 3:
-                print("%s" % "r"+idx, "%6.4f" % self.distances[i])
-                print("%s" % "a"+idx, "%6.2f" % self.angles[i])
-                print("%s" % "d"+idx, "%6.2f" % self.dihedrals[i])
-            elif i == 2:
-                print("%s" % "r"+idx, "%6.4f" % self.distances[i])
-                print("%s" % "a"+idx, "%6.2f" % self.angles[i])
-            elif i == 1:
-                print("%s" % "r"+idx, "%6.4f" % self.distances[i])
-
-    def print_zmat(self):
-        """Print Standard Z-Matrix Format"""
-        #TODO
-
-        """
-        0 1
-        O
-        O 1 1.5
-        H 1 1.0 2 120.0
-        H 2 1.0 1 120.0 3 180.0
-        """
-
     def build_xyz(self):
         """ Build xyz representation from z-matrix"""
         self.newcoords = np.zeros((len(self.atomcoords), 3))
         for i in range(len(self.atomcoords)):
-            self.newcoords[i] = self.calc_position(i)
+            self.newcoords[i] = self._calc_position(i)
         self.atomcoords = self.newcoords
 
-    def calc_position(self, i):
+    def _calc_position(self, i):
         """Calculate position of another atom based on internal coordinates"""
 
         if i > 1:
@@ -347,9 +265,43 @@ class ccData_xyz(ccData):
 
         return position
 
+    @property
+    def splitatomnos(self):
+        """Returns tuple of atomnos from reactants joined by atoms 0 and 1"""
+        fragments = [[], []]
+
+        return fragments
+
+
+    def print_distance_matrix(self):
+        """Print distance matrix in formatted form"""
+
+        # Title
+        print("\nDistance Matrix")
+
+        # Row Indices
+        for i in range(len(self.distancematrix)):
+            print("%3d" % i, end="  ")
+
+        print("\n", end="")
+        idx = 0
+        for vector in self.distancematrix:
+
+            # Column indices
+            print(idx, end=" ")
+
+            # Actual Values
+            for element in vector:
+                if not element == 0:
+                    print("%1.2f" % element, end=" ")
+                else:
+                    print("%1s" % " ", end="    ")
+            print("\n", end="")
+            idx += 1
+
     def print_xyz(self):
         """Print Standard XYZ Format"""
-        if not self.newcoords:
+        if not self.newcoords.any():
             self.build_xyz()
 
         print(len(self.newcoords))
@@ -365,3 +317,71 @@ class ccData_xyz(ccData):
 
         for atom in atomcoords:
             print("  %s %10.5f %10.5f %10.5f" % tuple(atom))
+
+    def print_gzmat(self):
+        """Print Guassian Z-Matrix Format
+        e.g.
+
+        0  3
+        C
+        O  1  r2
+        C  1  r3  2  a3
+        Si 3  r4  1  a4  2  d4
+        ...
+        Variables:
+        r2= 1.1963
+        r3= 1.3054
+        a3= 179.97
+        r4= 1.8426
+        a4= 120.10
+        d4=  96.84
+        ...
+        """
+        pt = PeriodicTable()
+
+        print('#', self.filename, "\n")
+        print(self.comment)
+
+        print(self.comment, end='')
+        for i in range(len(self.atomnos)):
+            idx = str(i+1)+" "
+            if i >= 3:
+                print(pt.element[self.atomnos[i]], "",
+                      self.connectivity[i]+1, " r"+idx,
+                      self.angleconnectivity[i]+1, " a"+idx,
+                      self.dihedralconnectivity[i]+1, " d"+idx.rstrip())
+            elif i == 2:
+                print(pt.element[self.atomnos[i]], "",
+                      self.connectivity[i]+1, " r"+idx,
+                      self.angleconnectivity[i]+1, " a"+idx.rstrip())
+            elif i == 1:
+                print(pt.element[self.atomnos[i]], "",
+                      self.connectivity[i]+1, " r"+idx.rstrip())
+            elif i == 0:
+                print(pt.element[self.atomnos[i]])
+
+        print("Variables:")
+
+        for i in range(1, len(self.atomnos)):
+            idx = str(i+1)+"="
+            if i >= 3:
+                print("%s" % "r"+idx, "%6.4f" % self.distances[i])
+                print("%s" % "a"+idx, "%6.2f" % self.angles[i])
+                print("%s" % "d"+idx, "%6.2f" % self.dihedrals[i])
+            elif i == 2:
+                print("%s" % "r"+idx, "%6.4f" % self.distances[i])
+                print("%s" % "a"+idx, "%6.2f" % self.angles[i])
+            elif i == 1:
+                print("%s" % "r"+idx, "%6.4f" % self.distances[i])
+
+    def print_zmat(self):
+        """Print Standard Z-Matrix Format"""
+        #TODO
+
+        """
+        0 1
+        O
+        O 1 1.5
+        H 1 1.0 2 120.0
+        H 2 1.0 1 120.0 3 180.0
+        """

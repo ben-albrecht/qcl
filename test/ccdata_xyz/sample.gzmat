@@ -1,0 +1,21 @@
+#Put Keywords Here, check Charge and Multiplicity.
+
+ 
+
+0  1
+C
+H  1  r2
+H  1  r3  2  a3
+H  1  r4  2  a4  3  d4
+H  1  r5  2  a5  3  d5
+Variables:
+r2= 1.0700
+r3= 1.0700
+a3= 109.47
+r4= 1.0700
+a4= 109.47
+d4= 240.00
+r5= 1.0700
+a5= 109.47
+d5= 120.00
+
