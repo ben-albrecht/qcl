@@ -30,7 +30,7 @@ def _xyzfile(ccdata):
         string += '\n'
 
     atomnos = [pt.Element[x] for x in ccdata.atomnos]
-    atomcoords = ccdata.atomcoords
+    atomcoords = ccdata.atomcoords[-1]
     if not type(atomcoords[0]) is list:
         atomcoords = [x.tolist() for x in atomcoords]
 
@@ -43,11 +43,17 @@ def _xyzfile(ccdata):
     return string
 
 
-def inputfiles(ccdatas, templatefiles, path):
-    """ Write multiple inpfiles for multiple templates and ccdatas"""
+def inputfiles(ccdatas, templatefiles, path='./', indexed=False):
+    """ Write multiple inpfiles for multiple templates and ccdatas
+        indexed assumed the ccdata object has filename and starts with number
+    """
     for ccdata in ccdatas:
+        if indexed:
+            index = ccdata.filename.split('.')[0]
+        else:
+            index = str(ccdatas.index(ccdata))
         for templatefile in templatefiles:
-            inpfile = join(path, str(ccdatas.index(ccdata)))
+            inpfile = join(path, index)
             inpfile = inpfile + '.' + templatefile
             inputfile(ccdata, templatefile, inpfile)
 
@@ -98,12 +104,14 @@ def _qcheminputfile(ccdata, templatefile, inpfile):
 
     # Geometry (Maybe a cleaner way to do this..)
     atomnos = [pt.Element[x] for x in ccdata.atomnos]
-    if not type(ccdata.atomcoords) is list:
-        atomcoords = ccdata.atomcoords.tolist()
+    atomcoords = ccdata.atomcoords[-1]
+    if not type(atomcoords) is list:
+        atomcoords = atomcoords.tolist()
 
     for i in range(len(atomcoords)):
         atomcoords[i].insert(0, atomnos[i])
 
+    print(len(atomcoords))
     for atom in atomcoords:
         string += '  {0} {1:10.8f} {2:10.8f} {3:10.8f}\n'.format(*atom)
 
@@ -154,9 +162,9 @@ def _qchemfsminputfile(ccdatas, templatefile, inpfile):
     # Geometry (Maybe a cleaner way to do this..)
     atomnos = [pt.Element[x] for x in ccdata.atomnos]
     if not type(ccdata.atomcoords[0]) is list:
-        atomcoords = [x.tolist() for x in ccdata.atomcoords]
+        atomcoords = [x.tolist() for x in ccdata.atomcoords[-1]]
     else:
-        atomcoords = ccdata.atomcoords
+        atomcoords = ccdata.atomcoords[-1]
 
     for i in range(len(atomcoords)):
         atomcoords[i].insert(0, atomnos[i])

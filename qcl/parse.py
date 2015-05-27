@@ -114,26 +114,82 @@ def multixyzfile(multixyzfile):
 def mopacoutputfile(mopacoutputfile, nogeometry=True):
     """Parse MOPAC output file"""
     if not nogeometry:
-        print("MOPAC geometry parsing not yet implemented - cclib TODO")
+        print("MOPAC geometry parsing not yet implemented - IN PROGRESS")
         raise
+
+    spinstate = {'SINGLET': 1,
+                 'DOUBLET': 2,
+                 'TRIPLET': 3,
+                 'QUARTET': 4,
+                 'QUINTET': 5,
+                 'SEXTET': 6,
+                 'HEPTET': 7,
+                 'OCTET': 8,
+                 'NONET': 9}
 
     with open(mopacoutputfile, 'r') as handle:
         lines = handle.readlines()
         attributes = {}
         ccdata = None
+
+        # Whether or not we are in geometry printout
+        geometry = False
+
+        # Defaults
+        charge = 0
+        mult = 1
+
+        # Empties
+        atomcoords = []
+        atomelements = []
+        atomnos = []
+        natom = None
+        scfenergies = []
+
+        subatomelements = []
+        subatomcoords = []
+
         for line in lines:
-            if "TOTAL ENERGY" in line:
+            if 'CHARGE ON SYSTEM =' in line and charge == 0:
+                charge = int(line.split()[5])
+                continue
+            elif 'SPIN STATE DEFINED AS ' in line and mult == 1:
+                mult = spinstate[line.split()[1]]
+                continue
+            elif "TOTAL ENERGY" in line:
                 scf = float(line.split()[3])
                 scfkcal = convertor(scf, 'eV', 'kcal')
-                attributes['scfenergies'] = [scfkcal]
-                ccdata = ccData(attributes=attributes)
+                scfenergies.append(scfkcal)
                 break
+            elif geometry and line != ' \n':
+                entry = line.split()
+                if not entry:
+                    geometry = False
+                    atomcoords.append(subatomcoords)
+                    if not atomelements:
+                        atomelements = subatomelements
+                        for atomelement in atomelements:
+                            atomnos.append(pt.AtomicNum[atomelement])
+                        natom = len(atomnos)
+                else:
+                    subatomelements.append(entry[1])
+                    subatomcoords.append(list(map(float, entry[2::2])))
 
-        if not ccdata:
-            print(mopacoutputfile, " - no TOTAL ENERGY found")
-            return None
-        else:
-            return ccdata
+            elif 'NUMBER   SYMBOL      (ANGSTROMS)     (ANGSTROMS)     (ANGSTROMS)' in line:
+                geometry = True
+                subatomelements = []
+                subatomcoords = []
+
+        attributes['natom'] = natom
+        attributes['atomcoords'] = atomcoords
+        attributes['atomnos'] = atomnos
+        attributes['scfenergies'] = scfenergies
+        attributes['charge'] = charge
+        attributes['mult'] = mult
+
+        ccdata = ccData(attributes=attributes)
+
+        return ccdata
 
 
 def _chargemult(line):
