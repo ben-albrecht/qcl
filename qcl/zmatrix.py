@@ -24,4 +24,4 @@ def internalize(xyzfile):
 
 def main(opts):
     """Main function for xyz to zmatrix conversion"""
-    print(write.xyzfile(internalize(opts.xyzfile)))
+    print(write._xyzfile(internalize(opts.xyzfile)))

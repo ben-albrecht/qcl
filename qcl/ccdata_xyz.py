@@ -1,4 +1,5 @@
-""" Class definition of ccData_xyz, an extension to cclib's ccData"""
+""" Class definition of ccData_xyz, an extension to cclib's ccData
+    TODO: Redo this class as a cclib method subclass rather than ccdata subclass"""
 from __future__ import print_function
 from __future__ import division
 
@@ -28,7 +29,7 @@ class ccData_xyz(ccData):
     Includes some hot new attributes and class methods
     """
 
-    def __init__(self, attributes={}, ccdataconvert=False):
+    def __init__(self, attributes={}):
         """Adding some new attributes for xyzfiles"""
 
         self.newcoords = None
@@ -58,20 +59,19 @@ class ccData_xyz(ccData):
 
         super(ccData_xyz, self).__init__(attributes=attributes)
 
-        # Initialize new data types if converting from ccdata
-        if ccdataconvert:
+        # Initialize new data types if attributes were parsed as an original ccdata_xyz
+        if not hasattr(self, 'elements'):
             pt = PeriodicTable()
             self.comment = '\n'
             self.filename = ''
             self.elements = []
             for atomno in self.atomnos:
                 self.elements.append(pt.element[atomno])
-            self.atomcoords = self.atomcoords[-1]
 
     def _build_distance_matrix(self):
         """Build distance matrix between all atoms
            TODO: calculate distances only as needed for efficiency"""
-        coords = self.atomcoords
+        coords = self.atomcoords[-1]
         self.distancematrix = np.zeros((len(coords), len(coords)))
         for i in range(len(coords)):
             for j in [x for x in range(len(coords)) if x > i]:
@@ -157,9 +157,10 @@ class ccData_xyz(ccData):
 
     def _calc_angle(self, atom1, atom2, atom3):
         """Calculate angle between 3 atoms"""
-        vec1 = self.atomcoords[atom2] - self.atomcoords[atom1]
+        coords = self.atomcoords[-1]
+        vec1 = coords[atom2] - coords[atom1]
         uvec1 = vec1 / norm(vec1)
-        vec2 = self.atomcoords[atom2] - self.atomcoords[atom3]
+        vec2 = coords[atom2] - coords[atom3]
         uvec2 = vec2 / norm(vec2)
         return np.arccos(np.dot(uvec1, uvec2))*(180.0/pi)
 
@@ -169,10 +170,11 @@ class ccData_xyz(ccData):
            For more information, see:
                http://math.stackexchange.com/a/47084
         """
+        coords = self.atomcoords[-1]
         # Vectors between 4 atoms
-        b1 = self.atomcoords[atom2] - self.atomcoords[atom1]
-        b2 = self.atomcoords[atom2] - self.atomcoords[atom3]
-        b3 = self.atomcoords[atom4] - self.atomcoords[atom3]
+        b1 = coords[atom2] - coords[atom1]
+        b2 = coords[atom2] - coords[atom3]
+        b3 = coords[atom4] - coords[atom3]
 
         # Normal vector of plane containing b1,b2
         n1 = np.cross(b1, b2)
@@ -197,10 +199,11 @@ class ccData_xyz(ccData):
 
     def build_xyz(self):
         """ Build xyz representation from z-matrix"""
-        self.newcoords = np.zeros((len(self.atomcoords), 3))
-        for i in range(len(self.atomcoords)):
+        coords = self.atomcoords[-1]
+        self.newcoords = np.zeros((len(coords), 3))
+        for i in range(len(coords)):
             self.newcoords[i] = self._calc_position(i)
-        self.atomcoords = self.newcoords
+        coords = self.newcoords
 
     def _calc_position(self, i):
         """Calculate position of another atom based on internal coordinates"""

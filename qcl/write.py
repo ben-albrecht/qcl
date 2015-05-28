@@ -31,7 +31,7 @@ def _xyzfile(ccdata):
 
     atomnos = [pt.Element[x] for x in ccdata.atomnos]
     atomcoords = ccdata.atomcoords[-1]
-    if not type(atomcoords[0]) is list:
+    if not type(atomcoords) is list:
         atomcoords = [x.tolist() for x in atomcoords]
 
     for i in range(len(atomcoords)):

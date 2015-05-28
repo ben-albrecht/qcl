@@ -45,7 +45,7 @@ def xyzfile(xyzfile, ccxyz=False):
         geometry = [x.split() for x in lines[2:]]
         coordinates = [x[1:] for x in geometry]
         atomnos = [ptable.number[x[0]] for x in geometry]
-        attributes['atomcoords'] = np.array(coordinates)
+        attributes['atomcoords'] = [np.array(coordinates)]
         attributes['atomnos'] = np.array(atomnos)
         attributes['natom'] = len(atomnos)
         elements = [pt.Element[x] for x in atomnos]
@@ -97,7 +97,7 @@ def multixyzfile(multixyzfile):
                 idx = numatoms+idx+2
                 attributes['charge'] = charge
                 attributes['mult'] = mult
-                attributes['atomcoords'] = np.array(atomcoords)
+                attributes['atomcoords'] = [np.array(atomcoords)]
                 attributes['atomnos'] = np.array(atomnos)
                 attributeslist.append(attributes)
 
