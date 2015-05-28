@@ -4,19 +4,56 @@ from __future__ import print_function
 
 from os.path import join
 
-try:
-    from cclib.parser.utils import PeriodicTable
-except ImportError:
-    raise ImportError("cclib not found!")
-
 from qcl import templates
+from qcl import periodictable as pt
 
 
-def inputfiles(ccdatas, templatefiles, path):
-    """ Write multiple inpfiles for multiple templates and ccdatas"""
+def xyzfile(ccdata, fname, append=False):
+    """xyzfile"""
+    if append:
+        permission = 'a'
+    else:
+        permission = 'w'
+    with open(fname, permission) as handle:
+        handle.write(_xyzfile(ccdata))
+
+
+def _xyzfile(ccdata):
+    """xyzfile string"""
+    string = ''
+
+    string += str(len(ccdata.atomnos)) + '\n'
+
+    if hasattr(ccdata, 'comment'):
+        string += ccdata.comment
+    else:
+        string += '\n'
+
+    atomnos = [pt.Element[x] for x in ccdata.atomnos]
+    atomcoords = ccdata.atomcoords[-1]
+    if not type(atomcoords[0]) is list:
+        atomcoords = [x.tolist() for x in atomcoords]
+
+    for i in range(len(atomcoords)):
+        atomcoords[i].insert(0, atomnos[i])
+
+    for atom in atomcoords:
+        string += '  {0} {1:10.8f} {2:10.8f} {3:10.8f}\n'.format(*atom)
+
+    return string
+
+
+def inputfiles(ccdatas, templatefiles, path='./', indexed=False):
+    """ Write multiple inpfiles for multiple templates and ccdatas
+        indexed assumed the ccdata object has filename and starts with number
+    """
     for ccdata in ccdatas:
+        if indexed:
+            index = ccdata.filename.split('.')[0]
+        else:
+            index = str(ccdatas.index(ccdata))
         for templatefile in templatefiles:
-            inpfile = join(path, str(ccdatas.index(ccdata)))
+            inpfile = join(path, index)
             inpfile = inpfile + '.' + templatefile
             inputfile(ccdata, templatefile, inpfile)
 
@@ -27,16 +64,20 @@ def inputfile(ccdata, templatefile, inpfile):
         if type(ccdata) is list \
             and 'fsm' in templatefile \
                 and '.qcm' in templatefile:
-            qchemfsminputfile(ccdata, templatefile, inpfile)
+            string = _qchemfsminputfile(ccdata, templatefile, inpfile)
         elif '.mop' in templatefile:
-            mopacinputfile(ccdata, templatefile, inpfile)
+            string = _mopacinputfile(ccdata, templatefile, inpfile)
         elif '.qcm' in templatefile:
-            qcheminputfile(ccdata, templatefile, inpfile)
+            string = _qcheminputfile(ccdata, templatefile, inpfile)
         else:
             print(templatefile, "failed -not a valid extension")
+            return
+
+        with open(inpfile, 'w') as handle:
+            handle.write(string)
 
 
-def qcheminputfile(ccdata, templatefile, inpfile):
+def _qcheminputfile(ccdata, templatefile, inpfile):
     """
     Generate input file from geometry (list of lines) depending on job type
 
@@ -45,124 +86,122 @@ def qcheminputfile(ccdata, templatefile, inpfile):
     :inpfile:     OUTPUT - expects a path/to/inputfile to write inpfile
     """
 
-    with open(inpfile, 'w') as handle:
-        handle.write(_qcheminputfile_string(ccdata, templatefile, inpfile))
+    string = ''
+
+    if ccdata.charge:
+        charge = ccdata.charge
+    else:
+        charge = 0
+    if ccdata.mult:
+        mult = ccdata.mult
+    else:
+        print('Multiplicity not found, set to 1 by default')
+        mult = 1
+
+    # $molecule
+    string += '$molecule\n'
+    string += '{0} {1}\n'.format(charge, mult)
+
+    # Geometry (Maybe a cleaner way to do this..)
+    atomnos = [pt.Element[x] for x in ccdata.atomnos]
+    atomcoords = ccdata.atomcoords[-1]
+    if not type(atomcoords) is list:
+        atomcoords = atomcoords.tolist()
+
+    for i in range(len(atomcoords)):
+        atomcoords[i].insert(0, atomnos[i])
+
+    print(len(atomcoords))
+    for atom in atomcoords:
+        string += '  {0} {1:10.8f} {2:10.8f} {3:10.8f}\n'.format(*atom)
+
+    string += '$end\n\n'
+    # $end
+
+    # $rem
+    with open(templates.get(templatefile), 'r') as templatehandle:
+        templatelines = [x for x in templatehandle.readlines()]
+
+    for line in templatelines:
+        string += line
+    # $end
+
+    return string
 
 
-def _qcheminputfile_string(ccdata, templatefile, inpfile):
-
-        string = ''
-
-        if ccdata.charge:
-            charge = ccdata.charge
-        else:
-            charge = 0
-        if ccdata.mult:
-            mult = ccdata.mult
-        else:
-            print('Multiplicity not found, set to 1 by default')
-            mult = 1
-
-        # $molecule
-        string += '$molecule\n'
-        string += '%{0} %{1}\n'.format(charge, mult)
-
-        # Geometry (Maybe a cleaner way to do this..)
-        atomnos = [PeriodicTable().element[x] for x in ccdata.atomnos]
-        if not type(ccdata.atomcoords) is list:
-            atomcoords = ccdata.atomcoords.tolist()
-
-        for i in range(len(atomcoords)):
-            atomcoords[i].insert(0, atomnos[i])
-
-        for atom in atomcoords:
-            string +='  {0} {1:10.8f} {2:10.8f} {3:10.8f}\n'.format(*atom)
-
-        string +='$end\n\n'
-        # $end
-
-        # $rem
-        with open(templates.get(templatefile), 'r') as templatehandle:
-            templatelines = [x for x in templatehandle.readlines()]
-
-        for line in templatelines:
-            string += line
-        # $end
-
-        return string
-
-
-def qchemfsminputfile(ccdatas, templatefile, inpfile):
+def _qchemfsminputfile(ccdatas, templatefile, inpfile):
     """
     Temporary fix for the need of a different input format for
     frozen string method
     """
+
+    string = ''
+
     # fsm assertions
-    assert len(ccdatas) == 2
-    assert type(inpfile) is str
+    if len(ccdatas) != 2:
+        print('2 ccdata objects were not passed for a fsm method')
+        raise StandardError
 
-    with open(inpfile, 'w') as handle:
+    ccdata = ccdatas[0]
 
-        ccdata = ccdatas[0]
+    if ccdata.charge:
+        charge = ccdata.charge
+    else:
+        print("Charge not found, set to 0 by default")
+        charge = 0
+    if ccdata.mult:
+        mult = ccdata.mult
+    else:
+        print("Multiplicity not found, set to 1 by default")
+        mult = 1
 
-        if ccdata.charge:
-            charge = ccdata.charge
-        else:
-            print("Charge not found, set to 0 by default")
-            charge = 0
-        if ccdata.mult:
-            mult = ccdata.mult
-        else:
-            print("Multiplicity not found, set to 1 by default")
-            mult = 1
+    # $molecule
+    string += '$molecule\n'
+    string += '{0} {1}\n'.format(charge, mult)
 
-        # $molecule
-        handle.write("$molecule\n")
-        handle.write("%s %s\n" % (charge, mult))
+    # Geometry (Maybe a cleaner way to do this..)
+    atomnos = [pt.Element[x] for x in ccdata.atomnos]
+    if not type(ccdata.atomcoords[0]) is list:
+        atomcoords = [x.tolist() for x in ccdata.atomcoords[-1]]
+    else:
+        atomcoords = ccdata.atomcoords[-1]
 
-        # Geometry (Maybe a cleaner way to do this..)
-        atomnos = [PeriodicTable().element[x] for x in ccdata.atomnos]
-        if not type(ccdata.atomcoords[0]) is list:
-            atomcoords = [x.tolist() for x in ccdata.atomcoords]
-        else:
-            atomcoords = ccdata.atomcoords
+    for i in range(len(atomcoords)):
+        atomcoords[i].insert(0, atomnos[i])
 
-        for i in range(len(atomcoords)):
-            atomcoords[i].insert(0, atomnos[i])
+    for atom in atomcoords:
+        string += '  {0} {1:10.8f} {2:10.8f} {3:10.8f}\n'.format(*atom)
 
-        for atom in atomcoords:
-            handle.write("  %s %10.8f %10.8f %10.8f\n" % tuple(atom))
+    string += '******\n'
 
-        handle.write("******\n")
+    ccdata = ccdatas[1]
 
-        ccdata = ccdatas[1]
+    # Geometry (Maybe a cleaner way to do this..)
+    atomnos = [pt.Element[x] for x in ccdata.atomnos]
+    if not type(ccdata.atomcoords[0]) is list:
+        atomcoords = [x.tolist() for x in ccdata.atomcoords]
+    else:
+        atomcoords = ccdata.atomcoords
 
-        # Geometry (Maybe a cleaner way to do this..)
-        atomnos = [PeriodicTable().element[x] for x in ccdata.atomnos]
-        if not type(ccdata.atomcoords[0]) is list:
-            atomcoords = [x.tolist() for x in ccdata.atomcoords]
-        else:
-            atomcoords = ccdata.atomcoords
+    for i in range(len(atomcoords)):
+        atomcoords[i].insert(0, atomnos[i])
 
-        for i in range(len(atomcoords)):
-            atomcoords[i].insert(0, atomnos[i])
+    for atom in atomcoords:
+        string += '  {0} {1:10.8f} {2:10.8f} {3:10.8f}\n'.format(*atom)
 
-        for atom in atomcoords:
-            handle.write("  %s %10.8f %10.8f %10.8f\n" % tuple(atom))
+    string += '$end\n\n'
+    # $end
 
-        handle.write("$end\n\n")
-        # $end
+    # $rem
+    with open(templates.get(templatefile), 'r') as templatehandle:
+        template = [x for x in templatehandle.readlines()]
 
-        # $rem
-        with open(templates.get(templatefile), 'r') as templatehandle:
-            template = [x for x in templatehandle.readlines()]
-
-        for line in template:
-            handle.write(line)
-        # $end
+    for line in template:
+        string += line
+    # $end
 
 
-def mopacinputfile(ccdata, templatefile, inpfile):
+def _mopacinputfile(ccdata, templatefile, inpfile):
     """
     Generate input file from geometry (list of lines) depending on job type
 
@@ -170,58 +209,49 @@ def mopacinputfile(ccdata, templatefile, inpfile):
     :templatefile:  templatefile- tells us which template file to use
     :inputfile:     OUTPUT - expects a path/to/inputfile to write inpfile
     """
-    assert type(inpfile) is str
+    mopacmult = {1: 'SINGLET',
+                 2: 'DOUBLET',
+                 3: 'TRIPLET',
+                 4: 'QUARTET',
+                 5: 'QUINTET',
+                 6: 'SEXTET',
+                 7: 'SEPTET',
+                 8: 'OCTET',
+                 9: 'NONET'
+                 }
+
+    string = ''
+
     attributes = ccdata.getattributes()
-    assert len(attributes['atomnos']) == len(attributes['atomcoords'])
 
     with open(templates.get(templatefile), 'r') as templatehandle:
         template = [x for x in templatehandle.readlines()]
 
-    with open(inpfile, 'w') as handle:
+    # We assume first line is input commands
+    template[0] = template[0].rstrip('\n')
+    template[0] += ' CHARGE={0} {1}\n'.format(ccdata.charge,
+                                              mopacmult[ccdata.mult])
+    for line in template:
+        string += line
 
-        for line in template:
-            handle.write(line)
+    # Maybe some day I will write something meaningful here
+    string += 'comment line 1\n'
+    string += 'comment line 2\n'
 
-        # Maybe some day I will write something meaningful here
-        handle.write("comment line 1\n")
-        handle.write("comment line 2\n")
+    # The MOPAC input is basically an xyz file
 
-        # The MOPAC input is basically an xyz file
+    # Geometry (Maybe a cleaner way to do this..)
+    atomnos = [pt.Element[x] for x in attributes['atomnos']]
 
-        # Geometry (Maybe a cleaner way to do this..)
-        atomnos = [PeriodicTable().element[x] for x in attributes['atomnos']]
-        if not type(atomcoords) is list:
-            atomcoords = attributes['atomcoords'].tolist()
-        for i in range(len(atomcoords)):
-            atomcoords[i].insert(0, atomnos[i])
-
-        for atom in atomcoords:
-            handle.write("%s %10.8f %10.8f %10.8f\n" % tuple(atom))
-
-
-def xyzfile(ccdata, fname, append=False):
-    if append:
-        permission = 'a'
+    if not type(ccdata.atomcoords[0]) is list:
+        atomcoords = [x.tolist() for x in ccdata.atomcoords]
     else:
-        permission = 'w'
-
-    with open(fname, permission) as handle:
-        handle.write(str(len(ccdata.atomnos)) + "\n")
-
-        if hasattr(ccdata, 'comment'):
-            handle.write(ccdata.comment)
-        else:
-            handle.write("\n")
-
-        atomnos = [PeriodicTable().element[x] for x in ccdata.atomnos]
         atomcoords = ccdata.atomcoords
-        if not type(atomcoords[0]) is list:
-            atomcoords = [x.tolist() for x in atomcoords]
 
-        for i in range(len(atomcoords)):
-            atomcoords[i].insert(0, atomnos[i])
+    for i in range(len(atomcoords)):
+        atomcoords[i].insert(0, atomnos[i])
 
-        for atom in atomcoords:
-            handle.write("%s %10.8f %10.8f %10.8f\n" % tuple(atom))
+    for atom in atomcoords:
+        string += '  {0} {1:10.8f} {2:10.8f} {3:10.8f}\n'.format(*atom)
 
-
+    return string
