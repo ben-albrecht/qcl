@@ -7,7 +7,7 @@ Also, it assumes a bonding interatomic distance will always
 be shorter than a non-bonding interatomic distance
 """
 
-from qcl import parse
+from qcl import parse, write
 
 
 def internalize(xyzfile):
@@ -24,4 +24,4 @@ def internalize(xyzfile):
 
 def main(opts):
     """Main function for xyz to zmatrix conversion"""
-    internalize(opts.xyzfile)
+    print(write.xyzfile(internalize(opts.xyzfile)))
