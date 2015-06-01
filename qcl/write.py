@@ -111,7 +111,6 @@ def _qcheminputfile(ccdata, templatefile, inpfile):
     for i in range(len(atomcoords)):
         atomcoords[i].insert(0, atomnos[i])
 
-    print(len(atomcoords))
     for atom in atomcoords:
         string += '  {0} {1:10.8f} {2:10.8f} {3:10.8f}\n'.format(*atom)
 
@@ -243,10 +242,9 @@ def _mopacinputfile(ccdata, templatefile, inpfile):
     # Geometry (Maybe a cleaner way to do this..)
     atomnos = [pt.Element[x] for x in attributes['atomnos']]
 
-    if not type(ccdata.atomcoords[0]) is list:
-        atomcoords = [x.tolist() for x in ccdata.atomcoords]
-    else:
-        atomcoords = ccdata.atomcoords
+    atomcoords = ccdata.atomcoords[-1]
+    if not type(atomcoords) is list:
+        atomcoords = [x.tolist() for x in atomcoords]
 
     for i in range(len(atomcoords)):
         atomcoords[i].insert(0, atomnos[i])
