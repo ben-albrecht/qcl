@@ -203,7 +203,7 @@ class ccData_xyz(ccData):
         self.newcoords = np.zeros((len(coords), 3))
         for i in range(len(coords)):
             self.newcoords[i] = self._calc_position(i)
-        coords = self.newcoords
+        self.atomcoords[-1] = self.newcoords
 
     def _calc_position(self, i):
         """Calculate position of another atom based on internal coordinates"""

@@ -47,7 +47,7 @@ def stretch(outputfile, shift=2.0, templatefiles=None):
     #xyzfile = fname+'.xyz'
     #write.xyzfile(outputccdata, xyzfile)
 
-    product = ccData_xyz(ccdata.getattributes(), ccdataconvert=True)
+    product = ccData_xyz(ccdata.getattributes())
     ccdatas = []
     #product = parse.xyzfile(xyzfile, ccxyz=True)
     product.build_zmatrix()
@@ -80,11 +80,6 @@ def stretch(outputfile, shift=2.0, templatefiles=None):
     ccdatas.append(product)
 
     if not savexyz:
-        # Get correct charge/multiplicity
-        for ccdata in ccdatas:
-            ccdata.charge = outputccdata.charge
-            ccdata.mult = outputccdata.mult
-
         for i in range(len(templatefiles)):
             if len(templatefiles) == 1:
                 idx = ''
@@ -100,8 +95,8 @@ def stretch(outputfile, shift=2.0, templatefiles=None):
                             templatefiles[i],
                             fname+idx+'.qcm')
     else:
-        #reactant.print_xyz()
-        reactant.print_gzmat()
+        reactant.print_xyz()
+        #reactant.print_gzmat()
 
 
 def main(opts):

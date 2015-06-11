@@ -88,11 +88,11 @@ def _qcheminputfile(ccdata, templatefile, inpfile):
 
     string = ''
 
-    if ccdata.charge:
+    if hasattr(ccdata, 'charge'):
         charge = ccdata.charge
     else:
         charge = 0
-    if ccdata.mult:
+    if hasattr(ccdata, 'mult'):
         mult = ccdata.mult
     else:
         print('Multiplicity not found, set to 1 by default')
@@ -143,12 +143,12 @@ def _qchemfsminputfile(ccdatas, templatefile, inpfile):
 
     ccdata = ccdatas[0]
 
-    if ccdata.charge:
+    if hasattr(ccdata, 'charge'):
         charge = ccdata.charge
     else:
         print("Charge not found, set to 0 by default")
         charge = 0
-    if ccdata.mult:
+    if hasattr(ccdata, 'mult'):
         mult = ccdata.mult
     else:
         print("Multiplicity not found, set to 1 by default")
@@ -160,10 +160,10 @@ def _qchemfsminputfile(ccdatas, templatefile, inpfile):
 
     # Geometry (Maybe a cleaner way to do this..)
     atomnos = [pt.Element[x] for x in ccdata.atomnos]
-    if not type(ccdata.atomcoords[0]) is list:
-        atomcoords = [x.tolist() for x in ccdata.atomcoords[-1]]
-    else:
-        atomcoords = ccdata.atomcoords[-1]
+
+    atomcoords = ccdata.atomcoords[-1]
+    if not type(atomcoords) is list:
+        atomcoords = [x.tolist() for x in atomcoords]
 
     for i in range(len(atomcoords)):
         atomcoords[i].insert(0, atomnos[i])
@@ -177,10 +177,9 @@ def _qchemfsminputfile(ccdatas, templatefile, inpfile):
 
     # Geometry (Maybe a cleaner way to do this..)
     atomnos = [pt.Element[x] for x in ccdata.atomnos]
-    if not type(ccdata.atomcoords[0]) is list:
-        atomcoords = [x.tolist() for x in ccdata.atomcoords]
-    else:
-        atomcoords = ccdata.atomcoords
+    atomcoords = ccdata.atomcoords[-1]
+    if not type(atomcoords) is list:
+        atomcoords = [x.tolist() for x in atomcoords]
 
     for i in range(len(atomcoords)):
         atomcoords[i].insert(0, atomnos[i])
@@ -198,6 +197,7 @@ def _qchemfsminputfile(ccdatas, templatefile, inpfile):
     for line in template:
         string += line
     # $end
+    return string
 
 
 def _mopacinputfile(ccdata, templatefile, inpfile):

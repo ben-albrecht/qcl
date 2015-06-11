@@ -1,3 +1,4 @@
+qchem/omegab97x-d_opt.qcm
 $rem
     jobtype                     opt
     exchange                    omegaB97X-D
@@ -8,5 +9,6 @@ $rem
     geom_opt_tol_energy         10
     geom_opt_max_cycles         300
     scf_max_cycles              300
-    scf_algorithm               diis_gdm
+    scf_algorithm               diis
 $end
+
