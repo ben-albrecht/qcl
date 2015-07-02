@@ -28,6 +28,11 @@ def parse(source):
     pass
 
 
+def gzmat(gzmatfile):
+    # TODO
+    pass
+
+
 def xyzfile(xyzfile, ccxyz=False):
     """ Parse xyzfile to ccData or ccData_xyz object"""
     if not type(xyzfile) == str:
