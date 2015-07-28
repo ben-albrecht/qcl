@@ -1,4 +1,3 @@
-qchem/omegab97x-d_opt.qcm
 $rem
     jobtype                     opt
     exchange                    omegaB97X-D

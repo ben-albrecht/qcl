@@ -55,6 +55,7 @@ def walk(top, topdown=True, onerror=None, followlinks=False, ignore=[]):
     for name in dirs:
         new_path = join(top, name)
         if followlinks or not islink(new_path):
-            yield from walk(new_path, topdown, onerror, followlinks)
+            for step in walk(new_path, topdown, onerror, followlinks):
+                yield step
     if not topdown:
         yield top, dirs, nondirs
