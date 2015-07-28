@@ -195,7 +195,9 @@ def get_arguments(args=None):
         help="Generate Z-Matrix")
 
     # Zmatrix arguments
-    parser_zmatrix.add_argument('xyzfile', help='xyzfile to convert')
+    parser_zmatrix.add_argument('inputfile', help='inputfile to convert')
+
+    parser_zmatrix.add_argument('--outfiletype', default='gzmat', choices=['xyz', 'gzmat', 'zmat'], help='outputfile type to generate')
 
     # Zmatrix function call
     parser_zmatrix.set_defaults(func=zmatrix.main)
