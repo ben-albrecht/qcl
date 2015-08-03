@@ -58,7 +58,7 @@ def inputfiles(ccdatas, templatefiles, path='./', indexed=False):
             inputfile(ccdata, templatefile, inpfile)
 
 
-def inputfile(ccdata, templatefile, inpfile):
+def inputfile(ccdata, templatefile, inpfile=None):
     """Generic write ccdata + templatefile to inpfile"""
     if templates.exists(templatefile):
         if type(ccdata) is list \
@@ -73,8 +73,11 @@ def inputfile(ccdata, templatefile, inpfile):
             print(templatefile, "failed -not a valid extension")
             return
 
-        with open(inpfile, 'w') as handle:
-            handle.write(string)
+        if inpfile:
+            with open(inpfile, 'w') as handle:
+                handle.write(string)
+        else:
+            return string
 
 
 def _qcheminputfile(ccdata, templatefile, inpfile):

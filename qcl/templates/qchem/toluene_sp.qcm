@@ -1,0 +1,13 @@
+$rem
+     jobtype                sp
+     exchange               omegaB97X-D
+     basis                  6-31G**
+     unrestricted           true
+     scf_max_cycles         300
+     scf_algorithm          diis
+     solvent_method         pcm
+$end
+
+$solvent
+    dielectric             2.38 ! Toluene
+$end

@@ -3,7 +3,7 @@ from argparse import ArgumentParser, \
     ArgumentDefaultsHelpFormatter, \
     ArgumentTypeError
 from qcl import conformers, obconformers, minima, \
-    stretch, templates, zmatrix, figs, rmsd
+    stretch, templates, zmatrix, figs, rmsd, job
 
 def get_arguments(args=None):
     """
@@ -57,6 +57,7 @@ def get_arguments(args=None):
         help='Angle interval to rotate dihedral angle by')
 
     parser_conformers.add_argument(
+        '--templatefiles',
         '-t',
         nargs='+',
         default=None,
@@ -202,17 +203,31 @@ def get_arguments(args=None):
     # Zmatrix function call
     parser_zmatrix.set_defaults(func=zmatrix.main)
 
-    # rmsd subparser
+    # RMSD subparser
     parser_rmsd = subparsers.add_parser(
         'rmsd',
         help="Compute rmsd between 2 xyzfiles")
 
-    # rmsd arguments
+    # RMSD arguments
     parser_rmsd.add_argument('xyzfile1', help='xyzfile1')
     parser_rmsd.add_argument('xyzfile2', help='xyzfile2')
 
     # rmsd function call
     parser_rmsd.set_defaults(func=rmsd.main)
+
+    # Job subparser
+    parser_job = subparsers.add_parser(
+        'job',
+        help='Extract ccdata from files and write new inputs')
+
+    # Job arguments
+    parser_job.add_argument('inputfile', help='inputfile')
+    parser_job.add_argument('templatefile', help='template file for input to generate')
+    parser_job.add_argument('--filetype', '--ft', choices=['xyz'], help='filetype of inputfile')
+    parser_job.add_argument('--multiplicity', '-m', type=int, help='Multiplicity')
+
+    # Job function call
+    parser_job.set_defaults(func=job.main)
 
     return parser.parse_args(args)
 
