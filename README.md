@@ -12,4 +12,6 @@ Here are some features currently available:
     rmsd                Align geometry and compute rmsd between 2 xyzfiles
 
 
+Try it out!
 
+`pip install qcl`
