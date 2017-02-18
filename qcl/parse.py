@@ -29,12 +29,15 @@ def parse(source):
 
 
 def gzmat(gzmatfile):
-    # TODO
+    """Parse gzmat format
+
+    TODO
+    """
     pass
 
 
 def xyzfile(xyzfile, ccxyz=False):
-    """ Parse xyzfile to ccData or ccData_xyz object"""
+    """Parse xyzfile to ccData or ccData_xyz object"""
     if not type(xyzfile) == str:
         print(xzyfile, "is not a xyzfilename")
         raise

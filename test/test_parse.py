@@ -1,7 +1,6 @@
 """Tests for parse.py"""
 
 import unittest
-#from ddt import ddt, data
 
 from qcl import parse
 
