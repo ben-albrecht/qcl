@@ -1,3 +1,0 @@
-# TODO
-## Tests
-## Sphinx Docs
