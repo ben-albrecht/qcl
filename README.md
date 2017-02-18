@@ -136,7 +136,7 @@ In qcl, `xyzfile` refers to the
 most xyzfile file viewers, e.g. [Avogadro](https://avogadro.cc/).
 
 `zmatrix` refers to the
-[Z-Matrix](https://en.wikipedia.org/wiki/Z-matrix_(chemistry) of a system.
+[Z-Matrix](https://en.wikipedia.org/wiki/Z-matrix_(chemistry)) of a system.
 
 `qcheminput` refers to [Q-Chem input files](http://www.q-chem.com/), and
 `mopacinput` refers to [MOPAC input files](http://openmopac.net/).
