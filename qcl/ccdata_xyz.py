@@ -322,7 +322,7 @@ class ccData_xyz(ccData):
             print("  %s %10.5f %10.5f %10.5f" % tuple(atom))
 
     def print_gzmat(self):
-        """Print Guassian Z-Matrix Format
+        """Print Gaussian Z-Matrix Format
         e.g.
 
         0  3
